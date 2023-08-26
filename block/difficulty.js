@@ -1,0 +1,78 @@
+const SHA256 = require('crypto-js/sha256');
+const TARGET_DIFFICULTY = BigInt(0x0fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
+const MAX_TRANSACTIONS = 10;
+
+const mempool = [];
+const blocks = [];
+
+function addTransaction(transaction) {
+    // TODO: add transaction to mempool
+    mempool.push(transaction);
+}
+
+function mine() {
+    // Create a new block
+    const block = {
+        id: blocks.length,
+        transactions: [],
+        prevHash: blocks.length > 0 ? SHA256(JSON.stringify(blocks[blocks.length - 1])).toString() : '0',
+        nonce: 0
+    };
+
+    // Add transactions from mempool to block and remove them from mempool
+    while (block.transactions.length < MAX_TRANSACTIONS && mempool.length > 0) {
+        block.transactions.push(mempool.shift());
+    }
+
+    // Keep changing the nonce until you find a hash that is less than the TARGET_DIFFICULTY
+    let hash;
+    do {
+        block.nonce++;
+        hash = SHA256(JSON.stringify(block));
+    } while (BigInt(`0x${hash}`) >= TARGET_DIFFICULTY);
+
+    // Set the hash property on the block
+    block.hash = hash.toString();
+
+    // Add the mined block to the blockchain
+    blocks.push(block);
+}
+
+
+function mine2() {
+    // Create a new block
+    const block = {
+        id: blocks.length,
+        transactions: [],
+        prevHash: blocks.length > 0 ? SHA256(JSON.stringify(blocks[blocks.length - 1])).toString() : '0',
+        nonce: 0
+    };
+
+    // Add transactions from mempool to block and remove them from mempool
+    while (block.transactions.length < MAX_TRANSACTIONS && mempool.length > 0) {
+        block.transactions.push(mempool.shift());
+    }
+
+    // Find a hash that meets the difficulty target
+    while (BigInt('0x' + SHA256(JSON.stringify(block)).toString()) > TARGET_DIFFICULTY) {
+        block.nonce++;
+    }
+
+    // Set the hash property on the block
+    block.hash = SHA256(JSON.stringify(block)).toString();
+
+    // Add the mined block to the blockchain
+    blocks.push(block);
+}
+
+
+ 
+
+module.exports = {
+    TARGET_DIFFICULTY,
+    MAX_TRANSACTIONS,
+    addTransaction, 
+    mine, 
+    blocks,
+    mempool
+};
